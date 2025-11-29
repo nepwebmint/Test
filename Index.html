@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Neptune Prompt Generator</title>
+
+        <!-- WebLLM Script -->
+          <script src="https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm"></script>
+
+            <style>
+                body {
+                      font-family: Arial, sans-serif;
+                            background: #f6f6f9;
+                                  margin: 0;
+                                        padding: 0;
+                                              display: flex;
+                                                    flex-direction: column;
+                                                          align-items: center;
+                                                              }
+                                                                  h1 {
+                                                                        margin-top: 40px;
+                                                                            }
+                                                                                #box {
+                                                                                      background: white;
+                                                                                            width: 90%;
+                                                                                                  max-width: 500px;
+                                                                                                        padding: 20px;
+                                                                                                              margin-top: 20px;
+                                                                                                                    border-radius: 12px;
+                                                                                                                          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                                                                                                                              }
+                                                                                                                                  input, button {
+                                                                                                                                        width: 100%;
+                                                                                                                                              padding: 12px;
+                                                                                                                                                    font-size: 16px;
+                                                                                                                                                          border-radius: 8px;
+                                                                                                                                                                border: 1px solid #ccc;
+                                                                                                                                                                      margin-bottom: 12px;
+                                                                                                                                                                          }
+                                                                                                                                                                              button {
+                                                                                                                                                                                    background: black;
+                                                                                                                                                                                          color: white;
+                                                                                                                                                                                                cursor: pointer;
+                                                                                                                                                                                                      border: none;
+                                                                                                                                                                                                          }
+                                                                                                                                                                                                              #output {
+                                                                                                                                                                                                                    background: #fafafa;
+                                                                                                                                                                                                                          padding: 15px;
+                                                                                                                                                                                                                                border-radius: 8px;
+                                                                                                                                                                                                                                      border: 1px solid #eee;
+                                                                                                                                                                                                                                          }
+                                                                                                                                                                                                                                            </style>
+                                                                                                                                                                                                                                            </head>
+                                                                                                                                                                                                                                            <body>
+
+                                                                                                                                                                                                                                              <h1>Neptune Prompt Generator</h1>
+
+                                                                                                                                                                                                                                                <div id="box">
+                                                                                                                                                                                                                                                    <input id="topic" placeholder="Enter your topic...">
+                                                                                                                                                                                                                                                        <button onclick="generate()">Generate Prompt</button>
+                                                                                                                                                                                                                                                            <div id="output"></div>
+                                                                                                                                                                                                                                                              </div>
+
+                                                                                                                                                                                                                                                                <script>
+                                                                                                                                                                                                                                                                    let engine;
+
+                                                                                                                                                                                                                                                                        async function loadModel() {
+                                                                                                                                                                                                                                                                              document.getElementById("output").innerHTML = "⏳ Loading model... please wait 5-10 seconds";
+
+                                                                                                                                                                                                                                                                                    const initProgressCallback = (evt) => {
+                                                                                                                                                                                                                                                                                            document.getElementById("output").innerHTML = "⏳ " + evt.text;
+                                                                                                                                                                                                                                                                                                  };
+
+                                                                                                                                                                                                                                                                                                        engine = await webllm.CreateMLCEngine(
+                                                                                                                                                                                                                                                                                                                "https://huggingface.co/mlc-ai/Llama-3.2-1B-Instruct-q4f32_1/resolve/main/",
+                                                                                                                                                                                                                                                                                                                        { initProgressCallback }
+                                                                                                                                                                                                                                                                                                                              );
+
+                                                                                                                                                                                                                                                                                                                                    document.getElementById("output").innerHTML = "✅ Model loaded!";
+                                                                                                                                                                                                                                                                                                                                        }
+
+                                                                                                                                                                                                                                                                                                                                            async function generate() {
+                                                                                                                                                                                                                                                                                                                                                  if (!engine) {
+                                                                                                                                                                                                                                                                                                                                                          await loadModel();
+                                                                                                                                                                                                                                                                                                                                                                }
+
+                                                                                                                                                                                                                                                                                                                                                                      const topic = document.getElementById("topic").value.trim();
+                                                                                                                                                                                                                                                                                                                                                                            if (!topic) {
+                                                                                                                                                                                                                                                                                                                                                                                    document.getElementById("output").innerHTML = "❗ Enter a topic please.";
+                                                                                                                                                                                                                                                                                                                                                                                            return;
+                                                                                                                                                                                                                                                                                                                                                                                                  }
+
+                                                                                                                                                                                                                                                                                                                                                                                                        document.getElementById("output").innerHTML = "⏳ Generating prompt…";
+
+                                                                                                                                                                                                                                                                                                                                                                                                              const result = await engine.chat.completions.create({
+                                                                                                                                                                                                                                                                                                                                                                                                                      messages: [
+                                                                                                                                                                                                                                                                                                                                                                                                                                { role: "user", content: "Create a detailed AI prompt about: " + topic }
+                                                                                                                                                                                                                                                                                                                                                                                                                                        ]
+                                                                                                                                                                                                                                                                                                                                                                                                                                              });
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    document.getElementById("output").innerHTML =
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            result.choices[0].message.content;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </script>
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </body>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </html>
